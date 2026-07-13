@@ -8,7 +8,14 @@ export default function Navbar() {
           <ScanSearch size={22} className="text-white" strokeWidth={1.8} />
           <span className="text-[17px] font-semibold tracking-tight text-white">CRO AI Studio</span>
         </div>
-        <span className="text-xs text-white/50 md:text-sm">by Mindtech Solutions</span>
+        <a
+          href="https://mindtech.solutions/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-white/50 transition-colors hover:text-white/80 md:text-sm"
+        >
+          by Mindtech Solutions
+        </a>
       </div>
     </div>
   );

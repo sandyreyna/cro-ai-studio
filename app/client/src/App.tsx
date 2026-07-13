@@ -102,7 +102,14 @@ export default function App() {
           {view === 'loading' && <LoadingScreen phraseIdx={phraseIdx} />}
 
           <div className="relative z-10 flex justify-center pb-9">
-            <span className="text-xs text-white/30">Hecho por Mindtech Solutions</span>
+            <a
+              href="https://mindtech.solutions/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-white/30 transition-colors hover:text-white/60"
+            >
+              Hecho por Mindtech Solutions
+            </a>
           </div>
 
           <HowItWorksModal open={showHow} onClose={() => setShowHow(false)} />
