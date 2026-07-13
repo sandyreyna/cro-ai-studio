@@ -27,7 +27,13 @@ export default function App() {
 
   const [phraseIdx, setPhraseIdx] = useState(0);
   const [result, setResult] = useState<AnalyzeResult | null>(null);
-  const [activeId, setActiveId] = useState<number | null>(null);
+  // Hover (mouse preview) and click/tap (sticky) are tracked separately: a
+  // mouse click always fires a hover-enter right before the click event, so a
+  // single toggle-on-click naively fighting that hover state would flip back
+  // off in the same gesture — same failure mode as a tap on a touch device.
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const activeId = hoveredId ?? selectedId;
 
   const phraseInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -67,7 +73,8 @@ export default function App() {
     }
     setError('');
     setImageError('');
-    setActiveId(null);
+    setHoveredId(null);
+    setSelectedId(null);
     setView('loading');
 
     try {
@@ -129,7 +136,8 @@ export default function App() {
 
   function handleReset() {
     setView('input');
-    setActiveId(null);
+    setHoveredId(null);
+    setSelectedId(null);
     setError('');
     setImageError('');
   }
@@ -187,8 +195,8 @@ export default function App() {
           result={result}
           imageUrl={imagePreview}
           activeId={activeId}
-          onHover={setActiveId}
-          onSelect={(id) => setActiveId((cur) => (cur === id ? null : id))}
+          onHover={setHoveredId}
+          onSelect={(id) => setSelectedId((cur) => (cur === id ? null : id))}
           onFile={handleAttachInResults}
           onImageError={setImageError}
           imageAnalyzing={imageAnalyzing}
