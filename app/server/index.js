@@ -2,7 +2,6 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { analyzeRouter } from './routes/analyze.js';
-import { annotateRouter } from './routes/annotate.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -19,7 +18,6 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api', analyzeRouter);
-app.use('/api', annotateRouter);
 
 app.use((err, _req, res, _next) => {
   console.error(err);

@@ -14,11 +14,11 @@ analyzeRouter.post('/analyze', async (req, res) => {
 
     const findings = analysis.findings.map((f, i) => ({
       id: i + 1,
-      source: 'structural',
       category: f.category,
       severity: f.severity,
       title: f.title,
       description: f.description,
+      section: f.section,
     }));
 
     res.json({
@@ -28,6 +28,8 @@ analyzeRouter.post('/analyze', async (req, res) => {
       headline: analysis.headline,
       categories: analysis.categories,
       findings,
+      wireframe: analysis.wireframe,
+      brand: { primaryColor: page.brand?.primaryColor, logoUrl: page.brand?.logoUrl },
     });
   } catch (err) {
     if (err instanceof AnalysisError) {

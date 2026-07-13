@@ -1,6 +1,6 @@
 # CRO AI Studio — Landing Page Reviewer
 
-Herramienta de IA que analiza una landing page (URL + screenshot opcional) y entrega recomendaciones de CRO, usando Claude para el razonamiento. Ver `../cro-ai-studio-brief.md` y `../outputs/spec.md` para el contexto completo del proyecto.
+Herramienta de IA que analiza una landing page por URL y entrega recomendaciones de CRO junto con un wireframe generado de cómo se vería la página mejorada, usando Claude para el razonamiento. Ver `../cro-ai-studio-brief.md` y `../outputs/spec.md` para el contexto original del proyecto (nota: la v1 documentada ahí incluía carga de screenshot; se reemplazó por el wireframe generado por las razones explicadas abajo).
 
 ## Estructura
 
@@ -32,10 +32,13 @@ app/
 
 ## Cómo funciona
 
-- **Nivel 1 (obligatorio):** el frontend pega la URL a `POST /api/analyze`. El servidor hace fetch del HTML real, extrae copy/CTAs/jerarquía/señales SEO con `cheerio`, y le pide a Claude (`claude-sonnet-5`, vía tool-use forzado) un análisis estructurado: score, 4 categorías, y una lista de hallazgos accionables.
-- **Nivel 2 (opcional):** si el usuario sube una captura, el frontend la manda a `POST /api/annotate` junto con la URL y el dispositivo. Claude analiza la imagen con visión y devuelve hallazgos de diseño visual con coordenadas (% del ancho/alto de la imagen), que el frontend dibuja como cajas/números sobre el screenshot real subido.
-- Ambas llamadas corren en paralelo cuando hay imagen, para no sumar los tiempos de espera.
-- Si el análisis de imagen falla, el análisis por URL se muestra igual (la imagen nunca bloquea el nivel 1), con una nota discreta de error.
+- El frontend pega la URL a `POST /api/analyze`. El servidor hace fetch del HTML real, extrae copy/CTAs/jerarquía/señales SEO con `cheerio`, y además intenta detectar el color de marca (meta `theme-color`, custom properties CSS, frecuencia de colores) y el logo/favicon (`app/server/lib/brand.js`).
+- Con ese contexto, le pide a Claude (`claude-sonnet-5`, vía tool-use forzado) en una sola llamada: score, 4 categorías, una lista de hallazgos accionables (cada uno etiquetado con la sección del wireframe a la que corresponde: `nav`, `hero`, `features`, `social-proof`, `cta`, `footer` o `general`), y un **wireframe de la versión mejorada** — copy nuevo por sección que resuelve los hallazgos, respetando el color de marca real detectado.
+- El frontend renderiza ese wireframe como un mockup real (no una imagen ni coordenadas estimadas). Pasar el cursor o hacer click en un hallazgo resalta su(s) sección(es) correspondiente(s) en el wireframe, y viceversa — todo con posiciones DOM reales, sin depender de que un modelo de visión adivine coordenadas sobre una foto (ver historial de decisiones abajo).
+
+### Por qué no hay carga de screenshot
+
+La v1 original (ver `../outputs/spec.md`) sí incluía subir una captura para un "screenshot anotado" con cajas dibujadas por Claude Vision sobre la imagen real. Se probó y funcionaba bien con capturas de un solo viewport, pero con capturas de página completa (full-page, muy altas) la precisión de las coordenadas se degradaba notablemente — un hallazgo sobre un elemento de arriba podía terminar marcado muy abajo. Se decidió reemplazarlo por el wireframe generado: mismo "wow" visual en una demo, pero sin depender de que el modelo acierte una posición en píxeles.
 
 ## Notas de seguridad
 

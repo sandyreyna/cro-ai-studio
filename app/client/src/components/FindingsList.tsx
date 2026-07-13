@@ -1,30 +1,30 @@
-import type { Finding } from '../lib/api';
+import type { Finding, SectionType } from '../lib/api';
 import { SEVERITY_LABEL, severityBadgeClass } from '../lib/format';
 
 interface Props {
   findings: Finding[];
-  activeId: number | null;
-  onHover: (id: number | null) => void;
-  onSelect: (id: number) => void;
+  activeSection: SectionType | 'general' | null;
+  onHover: (section: SectionType | 'general' | null) => void;
+  onSelect: (section: SectionType | 'general') => void;
 }
 
-export default function FindingsList({ findings, activeId, onHover, onSelect }: Props) {
+export default function FindingsList({ findings, activeSection, onHover, onSelect }: Props) {
   return (
     <div>
       <div className="mb-3.5 text-[11px] uppercase tracking-[0.2em] text-white/40">
-        Nivel 1 · Recomendaciones ({findings.length})
+        Recomendaciones ({findings.length})
       </div>
       <div className="flex flex-col gap-3">
         {findings.map((f) => {
-          const on = activeId === f.id;
+          const on = activeSection === f.section && f.section !== 'general';
           return (
             <div
               key={f.id}
               role="button"
               tabIndex={0}
-              onMouseEnter={() => onHover(f.id)}
+              onMouseEnter={() => onHover(f.section)}
               onMouseLeave={() => onHover(null)}
-              onClick={() => onSelect(f.id)}
+              onClick={() => onSelect(f.section)}
               className={`flex cursor-pointer items-start gap-3.5 rounded-2xl border px-4.5 py-4 transition-all ${
                 on
                   ? 'border-white/28 bg-white/[0.09] shadow-[0_8px_30px_rgba(0,0,0,0.4)]'
@@ -45,9 +45,6 @@ export default function FindingsList({ findings, activeId, onHover, onSelect }: 
                     {SEVERITY_LABEL[f.severity]}
                   </span>
                   <span className="text-[11px] uppercase tracking-[0.08em] text-white/35">{f.category}</span>
-                  {f.source === 'visual' && (
-                    <span className="text-[11px] uppercase tracking-[0.08em] text-white/35">· visual</span>
-                  )}
                 </div>
                 <div className="text-[13.5px] leading-relaxed text-white/60">{f.description}</div>
               </div>

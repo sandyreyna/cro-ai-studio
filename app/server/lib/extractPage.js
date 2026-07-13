@@ -1,5 +1,6 @@
 import * as cheerio from 'cheerio';
 import { assertPublicHostname } from './ssrfGuard.js';
+import { extractBrand } from './brand.js';
 
 export class AnalysisError extends Error {
   constructor(message, status = 400) {
@@ -72,6 +73,9 @@ export async function fetchAndExtract(rawUrl, { timeoutMs = 12000 } = {}) {
 
   const html = await res.text();
   const $ = cheerio.load(html);
+  const finalUrl = res.url || parsed.toString();
+  const brand = await extractBrand($, finalUrl);
+
   $('script, style, noscript, svg, template').remove();
 
   const title = $('title').first().text().trim();
@@ -99,7 +103,7 @@ export async function fetchAndExtract(rawUrl, { timeoutMs = 12000 } = {}) {
   }
 
   return {
-    finalUrl: res.url || parsed.toString(),
+    finalUrl,
     displayUrl: parsed.hostname + (parsed.pathname !== '/' ? parsed.pathname : ''),
     title,
     metaDescription,
@@ -112,5 +116,6 @@ export async function fetchAndExtract(rawUrl, { timeoutMs = 12000 } = {}) {
     imgAltMissing,
     wordCount,
     bodyTextSample: bodyText.slice(0, TEXT_LIMIT),
+    brand,
   };
 }

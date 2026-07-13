@@ -1,39 +1,22 @@
 import { motion } from 'framer-motion';
 import { ScanSearch, RotateCcw } from 'lucide-react';
-import type { AnalyzeResult, Finding } from '../lib/api';
+import type { AnalyzeResult, SectionType } from '../lib/api';
 import { renderEmphasis } from '../lib/format';
 import ScoreRing from './ScoreRing';
 import CategoryCards from './CategoryCards';
-import AnnotatedPanel from './AnnotatedPanel';
+import WireframePanel from './WireframePanel';
 import FindingsList from './FindingsList';
 
 interface Props {
   result: AnalyzeResult;
-  imageUrl: string | null;
-  activeId: number | null;
-  onHover: (id: number | null) => void;
-  onSelect: (id: number) => void;
-  onFile: (file: File) => void;
-  onImageError: (message: string) => void;
-  imageAnalyzing: boolean;
-  imageError: string;
+  activeSection: SectionType | 'general' | null;
+  onHover: (section: SectionType | 'general' | null) => void;
+  onSelect: (section: SectionType | 'general') => void;
   onReset: () => void;
 }
 
-export default function ResultsScreen({
-  result,
-  imageUrl,
-  activeId,
-  onHover,
-  onSelect,
-  onFile,
-  onImageError,
-  imageAnalyzing,
-  imageError,
-  onReset,
-}: Props) {
+export default function ResultsScreen({ result, activeSection, onHover, onSelect, onReset }: Props) {
   const highCount = result.findings.filter((f) => f.severity === 'alta').length;
-  const visualFindings: Finding[] = result.findings.filter((f) => f.source === 'visual');
 
   return (
     <div
@@ -88,26 +71,18 @@ export default function ResultsScreen({
 
         <CategoryCards categories={result.categories} />
 
-        {imageError && (
-          <div className="mb-2 rounded-xl border border-white/15 bg-white/[0.04] px-4 py-3 text-xs text-white/60">
-            {imageError}
-          </div>
-        )}
-
         <div className="mt-7 grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
-          <AnnotatedPanel
-            imageUrl={imageUrl}
-            analyzedUrl={result.analyzedUrl}
+          <WireframePanel
+            wireframe={result.wireframe}
+            brand={result.brand}
             device={result.device}
-            visualFindings={visualFindings}
-            activeId={activeId}
+            analyzedUrl={result.analyzedUrl}
+            findings={result.findings}
+            activeSection={activeSection}
             onHover={onHover}
             onSelect={onSelect}
-            onFile={onFile}
-            onError={onImageError}
-            analyzing={imageAnalyzing}
           />
-          <FindingsList findings={result.findings} activeId={activeId} onHover={onHover} onSelect={onSelect} />
+          <FindingsList findings={result.findings} activeSection={activeSection} onHover={onHover} onSelect={onSelect} />
         </div>
       </div>
     </div>

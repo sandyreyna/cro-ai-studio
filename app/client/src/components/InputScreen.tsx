@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 import { Link2, ArrowRight, AlertCircle, Monitor, Smartphone } from 'lucide-react';
-import ImageDropZone from './ImageDropZone';
 import type { Device } from '../lib/api';
 
 interface Props {
@@ -10,26 +9,10 @@ interface Props {
   setDevice: (d: Device) => void;
   error: string;
   onSubmit: (e: React.FormEvent) => void;
-  hasImage: boolean;
-  imageName?: string;
-  onFile: (file: File) => void;
-  onImageError: (message: string) => void;
   onShowHow: () => void;
 }
 
-export default function InputScreen({
-  url,
-  setUrl,
-  device,
-  setDevice,
-  error,
-  onSubmit,
-  hasImage,
-  imageName,
-  onFile,
-  onImageError,
-  onShowHow,
-}: Props) {
+export default function InputScreen({ url, setUrl, device, setDevice, error, onSubmit, onShowHow }: Props) {
   return (
     <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-6 px-5 py-10 text-center md:px-6 md:py-12">
       <motion.h1
@@ -47,8 +30,8 @@ export default function InputScreen({
         transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}
         className="max-w-lg text-sm leading-relaxed text-white/70 md:text-base"
       >
-        Pega la URL y recibe un análisis de copy, CTAs, jerarquía y señales de SEO en menos de 20 segundos. Sube una
-        captura para desbloquear el detalle visual anotado.
+        Pega la URL y recibe un análisis de copy, CTAs, jerarquía y señales de SEO en menos de 20 segundos, junto con
+        un wireframe de cómo se vería tu landing mejorada.
       </motion.p>
 
       <motion.form
@@ -119,8 +102,6 @@ export default function InputScreen({
             <span className="text-sm leading-relaxed text-white/80">{error}</span>
           </motion.div>
         )}
-
-        <ImageDropZone hasImage={hasImage} imageName={imageName} onFile={onFile} onError={onImageError} />
       </motion.form>
 
       <button
