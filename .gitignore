@@ -1,0 +1,15 @@
+node_modules/
+dist/
+build/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+
+# Raw design handoff export and source video — already implemented in app/client/public/assets
+*.zip
+recursos/
+
+# Local-only Claude Code permission overrides
+.claude/settings.local.json
