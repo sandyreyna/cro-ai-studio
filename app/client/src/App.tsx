@@ -92,7 +92,9 @@ export default function App() {
 
       if (imageFile) {
         if (visualSettled.status === 'fulfilled' && visualSettled.value) {
-          findings = [...findings, ...visualSettled.value.findings];
+          // Visual findings first: their numbers then match the markers on the
+          // screenshot 1:1 from the top of the list, instead of starting mid-list.
+          findings = [...visualSettled.value.findings, ...findings];
         } else {
           visualErr =
             visualSettled.status === 'rejected' && visualSettled.reason instanceof Error
@@ -117,7 +119,7 @@ export default function App() {
     setImageError('');
     try {
       const visual = await annotateImage(file, result.analyzedUrl, result.device);
-      setResult((r) => (r ? { ...r, findings: renumber([...r.findings, ...visual.findings]) } : r));
+      setResult((r) => (r ? { ...r, findings: renumber([...visual.findings, ...r.findings]) } : r));
     } catch (err) {
       setImageError(err instanceof ApiError ? err.message : 'No pudimos generar el anotado visual de tu captura.');
     } finally {
