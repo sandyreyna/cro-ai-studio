@@ -3,6 +3,9 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "scripts": {
+    "build": "npm install --prefix app/server && npm install --prefix app/client && npm run build --prefix app/client"
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",
     "cheerio": "^1.2.0"
