@@ -6,6 +6,7 @@ import ScoreRing from './ScoreRing';
 import CategoryCards from './CategoryCards';
 import WireframePanel from './WireframePanel';
 import FindingsList from './FindingsList';
+import UnlockModal from './UnlockModal';
 
 interface Props {
   result: AnalyzeResult;
@@ -13,9 +14,23 @@ interface Props {
   onHover: (section: SectionType | 'general' | null) => void;
   onSelect: (section: SectionType | 'general') => void;
   onReset: () => void;
+  unlocked: boolean;
+  showUnlockModal: boolean;
+  onUnlockClick: () => void;
+  onCloseUnlockModal: () => void;
 }
 
-export default function ResultsScreen({ result, activeSection, onHover, onSelect, onReset }: Props) {
+export default function ResultsScreen({
+  result,
+  activeSection,
+  onHover,
+  onSelect,
+  onReset,
+  unlocked,
+  showUnlockModal,
+  onUnlockClick,
+  onCloseUnlockModal,
+}: Props) {
   const highCount = result.findings.filter((f) => f.severity === 'alta').length;
 
   return (
@@ -81,10 +96,14 @@ export default function ResultsScreen({ result, activeSection, onHover, onSelect
             activeSection={activeSection}
             onHover={onHover}
             onSelect={onSelect}
+            unlocked={unlocked}
+            onUnlockClick={onUnlockClick}
           />
           <FindingsList findings={result.findings} activeSection={activeSection} onHover={onHover} onSelect={onSelect} />
         </div>
       </div>
+
+      <UnlockModal open={showUnlockModal} onClose={onCloseUnlockModal} analyzedUrl={result.analyzedUrl} />
     </div>
   );
 }

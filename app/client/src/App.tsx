@@ -26,6 +26,10 @@ export default function App() {
   const [selectedSection, setSelectedSection] = useState<SectionType | 'general' | null>(null);
   const activeSection = hoveredSection ?? selectedSection;
 
+  // No in-app unlock mechanism yet by design (see brief): payment is verified
+  // manually by Sandy over WhatsApp, outside the app, so this stays locked.
+  const [showUnlockModal, setShowUnlockModal] = useState(false);
+
   const phraseInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -52,6 +56,7 @@ export default function App() {
     setError('');
     setHoveredSection(null);
     setSelectedSection(null);
+    setShowUnlockModal(false);
     setView('loading');
 
     try {
@@ -68,6 +73,7 @@ export default function App() {
     setView('input');
     setHoveredSection(null);
     setSelectedSection(null);
+    setShowUnlockModal(false);
     setError('');
   }
 
@@ -123,6 +129,10 @@ export default function App() {
           onHover={setHoveredSection}
           onSelect={(section) => setSelectedSection((cur) => (cur === section ? null : section))}
           onReset={handleReset}
+          unlocked={false}
+          showUnlockModal={showUnlockModal}
+          onUnlockClick={() => setShowUnlockModal(true)}
+          onCloseUnlockModal={() => setShowUnlockModal(false)}
         />
       )}
     </div>

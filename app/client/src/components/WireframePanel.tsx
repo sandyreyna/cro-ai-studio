@@ -1,3 +1,5 @@
+import { motion } from 'framer-motion';
+import { Lock } from 'lucide-react';
 import type { Brand, Device, Finding, SectionType, Wireframe, WireframeSection } from '../lib/api';
 
 interface Props {
@@ -9,6 +11,8 @@ interface Props {
   activeSection: SectionType | 'general' | null;
   onHover: (section: SectionType | 'general' | null) => void;
   onSelect: (section: SectionType | 'general') => void;
+  unlocked: boolean;
+  onUnlockClick: () => void;
 }
 
 const SECTION_LABEL: Record<SectionType, string> = {
@@ -25,8 +29,66 @@ function initials(url: string) {
   return clean.slice(0, 2).toUpperCase();
 }
 
-export default function WireframePanel({ wireframe, brand, device, analyzedUrl, findings, activeSection, onHover, onSelect }: Props) {
+export default function WireframePanel({
+  wireframe,
+  brand,
+  device,
+  analyzedUrl,
+  findings,
+  activeSection,
+  onHover,
+  onSelect,
+  unlocked,
+  onUnlockClick,
+}: Props) {
   const color = brand.primaryColor || '#6366f1';
+  const heroIndex = wireframe.sections.findIndex((s) => s.type === 'hero');
+  const splitAt = heroIndex === -1 ? wireframe.sections.length : heroIndex + 1;
+  const visibleSections = wireframe.sections.slice(0, splitAt);
+  const lockedSections = wireframe.sections.slice(splitAt);
+
+  function renderSection(section: WireframeSection, i: number) {
+    const ids = findings.filter((f) => f.section === section.type).map((f) => f.id);
+    const on = activeSection === section.type;
+    const dim = activeSection != null && !on;
+    return (
+      <div
+        key={`${section.type}-${i}`}
+        role="button"
+        tabIndex={0}
+        onMouseEnter={() => onHover(section.type)}
+        onMouseLeave={() => onHover(null)}
+        onClick={() => onSelect(section.type)}
+        className="relative cursor-pointer transition-all duration-200"
+        style={{
+          outline: on ? `2px solid ${color}` : '2px solid transparent',
+          outlineOffset: '-2px',
+          opacity: dim ? 0.4 : 1,
+          background: on ? 'rgba(255,255,255,0.03)' : 'transparent',
+        }}
+      >
+        <span className="pointer-events-none absolute right-2 top-1 z-[2] text-[9px] uppercase tracking-[0.14em] text-white/25">
+          {SECTION_LABEL[section.type]}
+        </span>
+        {ids.map((id, bi) => (
+          <div
+            key={id}
+            className="absolute z-[3] flex h-[24px] w-[24px] items-center justify-center rounded-full text-[12px] font-bold leading-none shadow-[0_2px_8px_rgba(0,0,0,0.4)] transition-colors"
+            style={{
+              top: -9,
+              left: -9 + bi * 22,
+              background: on ? color : '#fff',
+              color: on ? '#fff' : '#1a1a1e',
+              border: `2px solid ${on ? '#fff' : '#1a1a1e'}`,
+            }}
+          >
+            {id}
+          </div>
+        ))}
+        <SectionContent section={section} brand={brand} color={color} device={device} analyzedUrl={analyzedUrl} />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -54,48 +116,48 @@ export default function WireframePanel({ wireframe, brand, device, analyzedUrl, 
           )}
 
           <div className="flex flex-col bg-[#0c0c0e]">
-            {wireframe.sections.map((section, i) => {
-              const ids = findings.filter((f) => f.section === section.type).map((f) => f.id);
-              const on = activeSection === section.type;
-              const dim = activeSection != null && !on;
-              return (
+            {visibleSections.map(renderSection)}
+
+            {lockedSections.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-100px' }}
+                transition={{ duration: 0.4 }}
+                className="relative"
+              >
                 <div
-                  key={`${section.type}-${i}`}
-                  role="button"
-                  tabIndex={0}
-                  onMouseEnter={() => onHover(section.type)}
-                  onMouseLeave={() => onHover(null)}
-                  onClick={() => onSelect(section.type)}
-                  className="relative cursor-pointer transition-all duration-200"
-                  style={{
-                    outline: on ? `2px solid ${color}` : '2px solid transparent',
-                    outlineOffset: '-2px',
-                    opacity: dim ? 0.4 : 1,
-                    background: on ? 'rgba(255,255,255,0.03)' : 'transparent',
-                  }}
+                  className={unlocked ? '' : 'pointer-events-none select-none blur-lg'}
+                  aria-hidden={!unlocked}
                 >
-                  <span className="pointer-events-none absolute right-2 top-1 z-[2] text-[9px] uppercase tracking-[0.14em] text-white/25">
-                    {SECTION_LABEL[section.type]}
-                  </span>
-                  {ids.map((id, bi) => (
-                    <div
-                      key={id}
-                      className="absolute z-[3] flex h-[24px] w-[24px] items-center justify-center rounded-full text-[12px] font-bold leading-none shadow-[0_2px_8px_rgba(0,0,0,0.4)] transition-colors"
-                      style={{
-                        top: -9,
-                        left: -9 + bi * 22,
-                        background: on ? color : '#fff',
-                        color: on ? '#fff' : '#1a1a1e',
-                        border: `2px solid ${on ? '#fff' : '#1a1a1e'}`,
-                      }}
-                    >
-                      {id}
-                    </div>
-                  ))}
-                  <SectionContent section={section} brand={brand} color={color} device={device} analyzedUrl={analyzedUrl} />
+                  {lockedSections.map((section, i) => renderSection(section, splitAt + i))}
                 </div>
-              );
-            })}
+
+                {!unlocked && (
+                  <div className="absolute inset-0 flex items-center justify-center p-4">
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.96 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true, margin: '-100px' }}
+                      transition={{ duration: 0.3, delay: 0.1 }}
+                      className="liquid-glass flex flex-col items-center gap-3 rounded-2xl p-6 text-center"
+                    >
+                      <Lock size={20} className="text-white" strokeWidth={1.8} />
+                      <span className="text-sm font-medium text-white">Desbloquea tu reporte completo</span>
+                      <motion.button
+                        type="button"
+                        onClick={onUnlockClick}
+                        whileHover={{ scale: 1.04 }}
+                        whileTap={{ scale: 0.97 }}
+                        className="rounded-full bg-white px-5 py-2 text-xs font-semibold text-black transition-shadow hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                      >
+                        Desbloquear — S/20
+                      </motion.button>
+                    </motion.div>
+                  </div>
+                )}
+              </motion.div>
+            )}
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface Props {
   open: boolean;
@@ -7,7 +7,7 @@ interface Props {
 
 export default function HowItWorksModal({ open, onClose }: Props) {
   return (
-    <AnimatePresence>
+    <>
       {open && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -53,6 +53,6 @@ export default function HowItWorksModal({ open, onClose }: Props) {
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </>
   );
 }
