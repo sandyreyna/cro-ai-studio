@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { X } from 'lucide-react';
+import { MessageCircle, X } from 'lucide-react';
 
 interface Props {
   open: boolean;
@@ -57,7 +57,7 @@ export default function UnlockModal({ open, onClose, analyzedUrl }: Props) {
                   1
                 </span>
                 <span className="text-sm leading-relaxed text-white/75">
-                  Yapea o Plinea <strong className="text-white">S/20</strong> a Sandy Reyna – Mindtech Solutions
+                  Yapea o Plinea <strong className="text-white">S/20</strong> a Sandy Reyna
                   <br />
                   📱 {PHONE_DISPLAY}
                 </span>
@@ -76,8 +76,10 @@ export default function UnlockModal({ open, onClose, analyzedUrl }: Props) {
               rel="noopener noreferrer"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="flex w-full items-center justify-center rounded-full bg-white py-3.5 text-sm font-semibold text-black transition-shadow hover:shadow-[0_0_24px_rgba(255,255,255,0.25)]"
+              style={{ background: '#25D366', color: '#fff' }}
+              className="flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-sm font-semibold transition-shadow hover:shadow-[0_0_24px_rgba(37,211,102,0.45)]"
             >
+              <MessageCircle size={17} strokeWidth={2} />
               Enviar comprobante por WhatsApp
             </motion.a>
 
