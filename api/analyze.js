@@ -1,5 +1,6 @@
 import { fetchAndExtract, AnalysisError } from '../app/server/lib/extractPage.js';
 import { analyzeStructural } from '../app/server/lib/claude.js';
+import { buildAnalyzeResponse } from '../app/server/lib/response.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -13,26 +14,7 @@ export default async function handler(req, res) {
   try {
     const page = await fetchAndExtract(url);
     const analysis = await analyzeStructural(page, normalizedDevice);
-
-    const findings = analysis.findings.map((f, i) => ({
-      id: i + 1,
-      category: f.category,
-      severity: f.severity,
-      title: f.title,
-      description: f.description,
-      section: f.section,
-    }));
-
-    res.status(200).json({
-      analyzedUrl: page.displayUrl,
-      device: normalizedDevice,
-      score: analysis.score,
-      headline: analysis.headline,
-      categories: analysis.categories,
-      findings,
-      wireframe: analysis.wireframe,
-      brand: { primaryColor: page.brand?.primaryColor, logoUrl: page.brand?.logoUrl },
-    });
+    res.status(200).json(buildAnalyzeResponse(page, normalizedDevice, analysis));
   } catch (err) {
     if (err instanceof AnalysisError) {
       res.status(err.status).json({ error: err.message });

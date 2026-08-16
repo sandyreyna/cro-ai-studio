@@ -4,6 +4,7 @@ import type { Brand, Device, Finding, SectionType, Wireframe, WireframeSection }
 
 interface Props {
   wireframe: Wireframe;
+  lockedSections: SectionType[];
   brand: Brand;
   device: Device;
   analyzedUrl: string;
@@ -11,7 +12,6 @@ interface Props {
   activeSection: SectionType | 'general' | null;
   onHover: (section: SectionType | 'general' | null) => void;
   onSelect: (section: SectionType | 'general') => void;
-  unlocked: boolean;
   onUnlockClick: () => void;
 }
 
@@ -31,6 +31,7 @@ function initials(url: string) {
 
 export default function WireframePanel({
   wireframe,
+  lockedSections,
   brand,
   device,
   analyzedUrl,
@@ -38,17 +39,16 @@ export default function WireframePanel({
   activeSection,
   onHover,
   onSelect,
-  unlocked,
   onUnlockClick,
 }: Props) {
   const color = brand.primaryColor || '#6366f1';
-  const heroIndex = wireframe.sections.findIndex((s) => s.type === 'hero');
-  const splitAt = heroIndex === -1 ? wireframe.sections.length : heroIndex + 1;
-  const visibleSections = wireframe.sections.slice(0, splitAt);
-  const lockedSections = wireframe.sections.slice(splitAt);
+
+  function badgesFor(type: SectionType) {
+    return findings.filter((f) => f.section === type).map((f) => f.id);
+  }
 
   function renderSection(section: WireframeSection, i: number) {
-    const ids = findings.filter((f) => f.section === section.type).map((f) => f.id);
+    const ids = badgesFor(section.type);
     const on = activeSection === section.type;
     const dim = activeSection != null && !on;
     return (
@@ -90,6 +90,48 @@ export default function WireframePanel({
     );
   }
 
+  // Locked sections never arrive with real content from the server — there's
+  // nothing to blur, just a type label and a skeleton shaped roughly like
+  // that section, plus badge numbers (no title/description) so the finding
+  // count is visible without revealing what any of them say.
+  function renderLockedSection(type: SectionType, i: number) {
+    const ids = badgesFor(type);
+    const on = activeSection === type;
+    const dim = activeSection != null && !on;
+    return (
+      <div
+        key={`locked-${type}-${i}`}
+        role="button"
+        tabIndex={0}
+        onMouseEnter={() => onHover(type)}
+        onMouseLeave={() => onHover(null)}
+        onClick={() => onSelect(type)}
+        className="relative cursor-pointer border-t border-white/[0.05] transition-opacity duration-200"
+        style={{ opacity: dim ? 0.35 : 1 }}
+      >
+        <span className="pointer-events-none absolute right-2 top-1 z-[2] text-[9px] uppercase tracking-[0.14em] text-white/20">
+          {SECTION_LABEL[type]}
+        </span>
+        {ids.map((id, bi) => (
+          <div
+            key={id}
+            className="absolute z-[3] flex h-[24px] w-[24px] items-center justify-center rounded-full text-[12px] font-bold leading-none shadow-[0_2px_8px_rgba(0,0,0,0.4)] transition-colors"
+            style={{
+              top: -9,
+              left: -9 + bi * 22,
+              background: on ? color : 'rgba(255,255,255,0.12)',
+              color: on ? '#fff' : 'rgba(255,255,255,0.5)',
+              border: `2px solid ${on ? color : 'rgba(255,255,255,0.2)'}`,
+            }}
+          >
+            {id}
+          </div>
+        ))}
+        <LockedSkeleton type={type} />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="mb-3.5 text-[11px] uppercase tracking-[0.2em] text-white/40">Wireframe · versión mejorada</div>
@@ -116,7 +158,7 @@ export default function WireframePanel({
           )}
 
           <div className="flex flex-col bg-[#0c0c0e]">
-            {visibleSections.map(renderSection)}
+            {wireframe.sections.map(renderSection)}
 
             {lockedSections.length > 0 && (
               <motion.div
@@ -126,36 +168,29 @@ export default function WireframePanel({
                 transition={{ duration: 0.4 }}
                 className="relative"
               >
-                <div
-                  className={unlocked ? '' : 'pointer-events-none select-none blur-lg'}
-                  aria-hidden={!unlocked}
-                >
-                  {lockedSections.map((section, i) => renderSection(section, splitAt + i))}
-                </div>
+                <div>{lockedSections.map((type, i) => renderLockedSection(type, i))}</div>
 
-                {!unlocked && (
-                  <div className="absolute inset-0 flex items-center justify-center p-4">
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.96 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true, margin: '-100px' }}
-                      transition={{ duration: 0.3, delay: 0.1 }}
-                      className="liquid-glass flex flex-col items-center gap-3 rounded-2xl p-6 text-center"
+                <div className="absolute inset-0 flex items-center justify-center p-4">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.96 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true, margin: '-100px' }}
+                    transition={{ duration: 0.3, delay: 0.1 }}
+                    className="liquid-glass flex flex-col items-center gap-3 rounded-2xl p-6 text-center"
+                  >
+                    <Lock size={20} className="text-white" strokeWidth={1.8} />
+                    <span className="text-sm font-medium text-white">Desbloquea tu reporte completo</span>
+                    <motion.button
+                      type="button"
+                      onClick={onUnlockClick}
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: 0.97 }}
+                      className="rounded-full bg-white px-5 py-2 text-xs font-semibold text-black transition-shadow hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
                     >
-                      <Lock size={20} className="text-white" strokeWidth={1.8} />
-                      <span className="text-sm font-medium text-white">Desbloquea tu reporte completo</span>
-                      <motion.button
-                        type="button"
-                        onClick={onUnlockClick}
-                        whileHover={{ scale: 1.04 }}
-                        whileTap={{ scale: 0.97 }}
-                        className="rounded-full bg-white px-5 py-2 text-xs font-semibold text-black transition-shadow hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
-                      >
-                        Desbloquear — S/20
-                      </motion.button>
-                    </motion.div>
-                  </div>
-                )}
+                      Desbloquear — S/20
+                    </motion.button>
+                  </motion.div>
+                </div>
               </motion.div>
             )}
           </div>
@@ -164,6 +199,46 @@ export default function WireframePanel({
       <p className="mx-0.5 mt-3 text-center text-xs leading-relaxed text-white/40">
         Pasa el cursor (o toca) un hallazgo de la lista para resaltar la sección correspondiente del wireframe.
       </p>
+    </div>
+  );
+}
+
+function LockedSkeleton({ type }: { type: SectionType }) {
+  if (type === 'features') {
+    return (
+      <div className="grid grid-cols-2 gap-3 px-6 py-8">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+            <div className="mb-2 h-2.5 w-2/3 rounded bg-white/[0.08]" />
+            <div className="h-2 w-full rounded bg-white/[0.04]" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (type === 'social-proof') {
+    return (
+      <div className="flex flex-col gap-2.5 px-6 py-8">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="h-9 rounded-lg border border-white/[0.06] bg-white/[0.02]" />
+        ))}
+      </div>
+    );
+  }
+
+  if (type === 'cta') {
+    return (
+      <div className="flex flex-col items-center gap-3 px-6 py-10">
+        <div className="h-4 w-2/3 rounded bg-white/[0.08]" />
+        <div className="h-9 w-40 rounded-lg bg-white/[0.06]" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-6 py-5">
+      <div className="mx-auto h-2 w-1/2 rounded bg-white/[0.04]" />
     </div>
   );
 }

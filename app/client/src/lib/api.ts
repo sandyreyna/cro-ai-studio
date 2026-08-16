@@ -51,7 +51,10 @@ export interface AnalyzeResult {
   categories: Category[];
   findings: Finding[];
   wireframe: Wireframe;
+  lockedSections: SectionType[];
+  unlocked: boolean;
   brand: Brand;
+  platform: string | null;
 }
 
 export class ApiError extends Error {}

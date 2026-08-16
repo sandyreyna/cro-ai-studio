@@ -84,7 +84,8 @@ export default function UnlockModal({ open, onClose, analyzedUrl }: Props) {
             </motion.a>
 
             <p className="mt-4 text-center text-xs leading-relaxed text-white/40">
-              Recibirás tu reporte completo el mismo día, por WhatsApp o correo.
+              Recibirás tu wireframe completo, tu copy final y un PDF con el detalle de implementación — el mismo día,
+              por WhatsApp o correo.
             </p>
           </motion.div>
         </motion.div>

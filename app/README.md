@@ -40,6 +40,13 @@ app/
 
 La v1 original (ver `../outputs/spec.md`) sí incluía subir una captura para un "screenshot anotado" con cajas dibujadas por Claude Vision sobre la imagen real. Se probó y funcionaba bien con capturas de un solo viewport, pero con capturas de página completa (full-page, muy altas) la precisión de las coordenadas se degradaba notablemente — un hallazgo sobre un elemento de arriba podía terminar marcado muy abajo. Se decidió reemplazarlo por el wireframe generado: mismo "wow" visual en una demo, pero sin depender de que el modelo acierte una posición en píxeles.
 
+## Desbloqueo Pro (paywall)
+
+- El wireframe que Claude genera SIEMPRE incluye todas las secciones (nav, hero, features, prueba social, cta, footer) — Claude necesita el cuadro completo para razonar bien las recomendaciones.
+- Lo que cambia es qué manda el servidor al navegador: `app/server/lib/response.js` (`buildAnalyzeResponse`) corta el array de secciones justo después del hero para cualquier visitante público. Las secciones bloqueadas **no viajan por la red en absoluto** — no es un blur de CSS, es contenido que el navegador nunca recibe. El frontend solo sabe los *tipos* de sección que faltan (`lockedSections`) y dibuja un skeleton genérico por cada una.
+- **`SKIP_PAYWALL=true`** en `server/.env` (local, gitignoreado) hace que el servidor mande todo sin recortar — así ves el reporte completo vos mismo para armar el PDF pagado. **Nunca se define esta variable en Vercel ni en Hostinger** — no hay parámetro de URL, header ni endpoint que la reemplace en producción; el sitio público siempre está bloqueado.
+- También se detecta la plataforma/CMS de la landing analizada (WordPress, Shopify, Webflow, Wix, Squarespace) a partir del mismo HTML que ya se descarga para el color de marca — `app/server/lib/platform.js`. Se muestra como texto discreto junto al diagnóstico gratuito si hay coincidencia clara; si no, no se muestra nada.
+
 ## Notas de seguridad
 
 - La API key de Anthropic vive solo en `server/.env` (gitignoreado) y nunca se expone al navegador.

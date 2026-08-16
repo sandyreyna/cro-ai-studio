@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { fetchAndExtract, AnalysisError } from '../lib/extractPage.js';
 import { analyzeStructural } from '../lib/claude.js';
+import { buildAnalyzeResponse } from '../lib/response.js';
 
 export const analyzeRouter = Router();
 
@@ -11,26 +12,7 @@ analyzeRouter.post('/analyze', async (req, res) => {
   try {
     const page = await fetchAndExtract(url);
     const analysis = await analyzeStructural(page, normalizedDevice);
-
-    const findings = analysis.findings.map((f, i) => ({
-      id: i + 1,
-      category: f.category,
-      severity: f.severity,
-      title: f.title,
-      description: f.description,
-      section: f.section,
-    }));
-
-    res.json({
-      analyzedUrl: page.displayUrl,
-      device: normalizedDevice,
-      score: analysis.score,
-      headline: analysis.headline,
-      categories: analysis.categories,
-      findings,
-      wireframe: analysis.wireframe,
-      brand: { primaryColor: page.brand?.primaryColor, logoUrl: page.brand?.logoUrl },
-    });
+    res.json(buildAnalyzeResponse(page, normalizedDevice, analysis));
   } catch (err) {
     if (err instanceof AnalysisError) {
       return res.status(err.status).json({ error: err.message });

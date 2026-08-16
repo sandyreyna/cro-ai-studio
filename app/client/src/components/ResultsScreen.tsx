@@ -14,7 +14,6 @@ interface Props {
   onHover: (section: SectionType | 'general' | null) => void;
   onSelect: (section: SectionType | 'general') => void;
   onReset: () => void;
-  unlocked: boolean;
   showUnlockModal: boolean;
   onUnlockClick: () => void;
   onCloseUnlockModal: () => void;
@@ -26,7 +25,6 @@ export default function ResultsScreen({
   onHover,
   onSelect,
   onReset,
-  unlocked,
   showUnlockModal,
   onUnlockClick,
   onCloseUnlockModal,
@@ -81,6 +79,9 @@ export default function ResultsScreen({
               Encontramos <strong className="text-white">{result.findings.length} oportunidades</strong> de mejora.{' '}
               {highCount} son de alto impacto: resuélvelas primero para el mayor salto en conversión.
             </p>
+            {result.platform && (
+              <p className="mt-2 text-xs text-white/50">Plataforma detectada: {result.platform}</p>
+            )}
           </div>
         </motion.div>
 
@@ -89,6 +90,7 @@ export default function ResultsScreen({
         <div className="mt-7 grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
           <WireframePanel
             wireframe={result.wireframe}
+            lockedSections={result.lockedSections}
             brand={result.brand}
             device={result.device}
             analyzedUrl={result.analyzedUrl}
@@ -96,7 +98,6 @@ export default function ResultsScreen({
             activeSection={activeSection}
             onHover={onHover}
             onSelect={onSelect}
-            unlocked={unlocked}
             onUnlockClick={onUnlockClick}
           />
           <FindingsList findings={result.findings} activeSection={activeSection} onHover={onHover} onSelect={onSelect} />

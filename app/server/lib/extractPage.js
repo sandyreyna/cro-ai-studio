@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio';
 import { assertPublicHostname } from './ssrfGuard.js';
 import { extractBrand } from './brand.js';
+import { detectPlatform } from './platform.js';
 
 export class AnalysisError extends Error {
   constructor(message, status = 400) {
@@ -75,6 +76,7 @@ export async function fetchAndExtract(rawUrl, { timeoutMs = 12000 } = {}) {
   const $ = cheerio.load(html);
   const finalUrl = res.url || parsed.toString();
   const brand = await extractBrand($, finalUrl);
+  const platform = detectPlatform(html);
 
   $('script, style, noscript, svg, template').remove();
 
@@ -117,5 +119,6 @@ export async function fetchAndExtract(rawUrl, { timeoutMs = 12000 } = {}) {
     wordCount,
     bodyTextSample: bodyText.slice(0, TEXT_LIMIT),
     brand,
+    platform,
   };
 }
